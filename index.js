@@ -1,4 +1,3 @@
-import fs from 'fs'
 import dotenv from 'dotenv'
 dotenv.config()
 
@@ -23,23 +22,23 @@ const main = async() => {
             
             const termino = await leerInput('Ciudad: ');
             const lugares = await busquedas.ciudad( termino )
-            const id = await listarLugares( lugares )          
+            const id = await listarLugares( lugares )    
             if( id === '0' ) continue;  
 
             const lugarSel = lugares.find( lugar => lugar.id === id )
-            busquedas.agregarHistorial( lugarSel )
+            busquedas.agregarHistorial( lugarSel.nombre )
 
-            const { weather, main } = await busquedas.clima( lugarSel.center[0], lugarSel.center[1])
+            const { temp, min, max, desc} = await busquedas.clima( lugarSel.lat, lugarSel.lng)
 
             console.clear()
             console.log('Informacion de la ciudad'.green)
-            console.log('Ciudad:', lugarSel.place_name )
-            console.log('lat:', lugarSel.center[0] )
-            console.log('lng:', lugarSel.center[1] )
-            console.log('minima:', main.temp_min )
-            console.log('maxima:', main.temp_max )
-            console.log('temp:', main.temp )
-            console.log('desc:', weather[0].description )
+            console.log('Ciudad:', lugarSel.nombre )
+            console.log('lat:', lugarSel.lat )
+            console.log('lng:', lugarSel.lng )
+            console.log('minima:', min )
+            console.log('maxima:', max )
+            console.log('temp:', temp )
+            console.log('desc:', desc )
 
             await pausa()
 
@@ -47,9 +46,7 @@ const main = async() => {
 
         case 2: 
 
-        busquedas.historial = busquedas.historial.splice(0,5)
-
-            busquedas.historial.forEach( ( lugar, i ) => { 
+            busquedas.historialCapitalizado.forEach( ( lugar, i ) => { 
                 const idx = `${ i + 1 }.`.green 
 
                 console.log(`${ idx } ${ lugar }`)

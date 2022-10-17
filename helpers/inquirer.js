@@ -74,7 +74,7 @@ const listarLugares = async( lugares = [] ) => {
         const idx = `${i + 1}.`.green
         return { 
             value: lugar.id,
-            name: `${ idx } ${ lugar.place_name }`
+            name: `${ idx } ${ lugar.nombre }`
         }
     });
 

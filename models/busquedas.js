@@ -9,6 +9,19 @@ class Busquedas {
         this.leerDB()
     }
 
+    get historialCapitalizado() { 
+
+        return this.historial.map( lugar => {
+
+            const frase = lugar.split(" ");
+
+            return frase.map( (palabra = '') => {
+
+                return palabra[0].toUpperCase() + palabra.slice(1)
+            }).join(" ")
+        })
+    }
+
     get paramsMapbox() { 
         return { 
             'access_token': process.env.MAPBOX_KEY,
@@ -36,10 +49,17 @@ class Busquedas {
     
             const resp = await instance.get()
     
-            return resp.data.features
+            return resp.data.features.map(( lugar ) => {
+                return { 
+                    id: lugar.id,
+                    nombre: lugar.place_name,
+                    lng: lugar.center[0], 
+                    lat: lugar.center[1]
+                }
+            });
 
         } catch (error) {
-            console.log( error )
+            return [];
         }
 
 
@@ -53,26 +73,39 @@ class Busquedas {
         })
 
         const resp = await instance.get();
+        const { weather, main } = resp.data
 
-        return resp.data
+        return { 
+            temp: main.temp, 
+            min: main.temp_min,
+            max: main.temp_max,
+            desc: weather[0].description
+        }
         
     }
 
-    agregarHistorial( lugar ) { 
+    agregarHistorial( lugar = '' ) { 
 
-        this.historial.unshift( lugar.place_name )
+        if( this.historial.includes( lugar.toLocaleLowerCase() )) { 
+            return; 
+        }
         
+        this.historial = this.historial.splice(0,4)
+
+        this.historial.unshift( lugar.toLocaleLowerCase() )
+        
+
+        this.guardarDB()
+        
+    }
+
+    guardarDB() { 
+
         const payload = {
             historial: this.historial 
         }
 
-        this.guardarDB( payload )
-        
-    }
-
-    guardarDB( lugar ) { 
-
-        fs.writeFileSync(this.dbPath, JSON.stringify( lugar ))
+        fs.writeFileSync(this.dbPath, JSON.stringify( payload ))
 
     }
 
@@ -82,9 +115,9 @@ class Busquedas {
             return;
         }
 
-        const data = fs.readFileSync(this.dbPath,{ encoding: 'utf-8'})
-        const info = JSON.parse( data )
-        this.historial = info.historial
+        const info = fs.readFileSync(this.dbPath,{ encoding: 'utf-8'})
+        const data = JSON.parse( info )
+        this.historial = data.historial
     }
     
 }
