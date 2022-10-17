@@ -47,6 +47,8 @@ const main = async() => {
 
         case 2: 
 
+        busquedas.historial = busquedas.historial.splice(0,5)
+
             busquedas.historial.forEach( ( lugar, i ) => { 
                 const idx = `${ i + 1 }.`.green 
 
